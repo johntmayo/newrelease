@@ -257,7 +257,7 @@ function buildRtLookup(rtMovies) {
 }
 
 // Main export: fetch and merge movies from all sources
-async function fetchMovies(region = 'US', maxPages = 5) {
+async function fetchMovies(region = 'US', maxPages = 2) {
   const movies = [];
   const seen = new Set();
 

@@ -48,6 +48,15 @@ Open [http://localhost:3000](http://localhost:3000).
 - **[TMDB](https://www.themoviedb.org)** – movie metadata, posters, ratings, streaming providers
 - **[Rotten Tomatoes](https://www.rottentomatoes.com/browse/movies_at_home/)** – critic and audience scores (scraped)
 
+## Deploy to Vercel
+
+1. Push the repo to GitHub
+2. Import the project at [vercel.com/new](https://vercel.com/new)
+3. Add the environment variable `TMDB_API_KEY` in **Settings → Environment Variables**
+4. Deploy — Vercel auto-detects Node.js and uses `vercel.json` for routing
+
+> **Note:** Vercel is serverless, so `node-cron` won't run between cold starts. Data is cached in `/tmp` while the container is warm. Use the **↻ Refresh** button in the UI to force a fresh scrape any time.
+
 ## Development
 
 ```bash
