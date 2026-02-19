@@ -270,7 +270,7 @@ function buildRtUrl(title) {
 }
 
 // Main export: fetch and merge movies from all sources
-async function fetchMovies(region = 'US', maxPages = 2) {
+async function fetchMovies(region = 'US', maxPages = 5) {
   const movies = [];
   const seen = new Set();
 
@@ -282,7 +282,7 @@ async function fetchMovies(region = 'US', maxPages = 2) {
   // 1. Kick off RT scrape + home page 1 + theatrical page 1 in parallel
   const [rtMovies, page1Data, theaterPage1Data] = await Promise.allSettled([
     scrapeRottenTomatoes(),
-    fetchTmdbPage(1, region, 90, '4|5'),
+    fetchTmdbPage(1, region, 180, '4|5'),
     fetchTmdbPage(1, region, 60, '2|3'),
   ]);
 
@@ -325,7 +325,7 @@ async function fetchMovies(region = 'US', maxPages = 2) {
 
   if (totalPages > 1) {
     const remaining = [];
-    for (let p = 2; p <= totalPages; p++) remaining.push(fetchTmdbPage(p, region, 90, '4|5'));
+    for (let p = 2; p <= totalPages; p++) remaining.push(fetchTmdbPage(p, region, 180, '4|5'));
     const results = await Promise.allSettled(remaining);
     results.forEach(r => { if (r.status === 'fulfilled') allHomePages.push(r.value); });
   }
