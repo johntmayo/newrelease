@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewRelease — Streaming Now</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">▶</span>
+      <span class="logo-text">NewRelease</span>
+      <span class="logo-tag">Streaming Now</span>
+    </div>
+    <div class="header-right">
+      <div id="status-badge" class="status-badge" title="Data status">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading…</span>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" title="Refresh data">↻ Refresh</button>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">◑</button>
+    </div>
+  </div>
+</header>
+
+<div class="controls-bar">
+  <div class="controls-inner">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input
+        type="search"
+        id="search-input"
+        class="search-input"
+        placeholder="Search titles, genres…"
+        autocomplete="off"
+      />
+    </div>
+
+    <div class="filters">
+      <select id="platform-filter" class="filter-select">
+        <option value="">All Platforms</option>
+      </select>
+
+      <select id="type-filter" class="filter-select">
+        <option value="">Any Access</option>
+        <option value="stream">Stream (Included)</option>
+        <option value="rent">Rent</option>
+        <option value="buy">Buy / Own</option>
+      </select>
+
+      <select id="genre-filter" class="filter-select">
+        <option value="">All Genres</option>
+      </select>
+
+      <select id="sort-select" class="filter-select">
+        <option value="date">Newest First</option>
+        <option value="rating">Highest Rated</option>
+        <option value="popularity">Most Popular</option>
+        <option value="title">A–Z</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div id="summary-bar" class="summary-bar hidden">
+    <span id="result-count"></span>
+    <button id="clear-filters" class="clear-btn hidden">✕ Clear filters</button>
+  </div>
+
+  <div id="movies-grid" class="movies-grid">
+    <!-- Movie cards injected here -->
+  </div>
+
+  <div id="loading-spinner" class="spinner-wrap">
+    <div class="spinner"></div>
+    <p>Fetching new releases…</p>
+  </div>
+
+  <div id="empty-state" class="empty-state hidden">
+    <div class="empty-icon">🎞️</div>
+    <h2>No movies found</h2>
+    <p>Try adjusting your search or filters.</p>
+  </div>
+
+  <div id="setup-notice" class="setup-notice hidden">
+    <div class="setup-icon">🔑</div>
+    <h2>API Key Required</h2>
+    <p>
+      This app uses the <strong>TMDB API</strong> (free) to pull streaming data.<br/>
+      To get started:
+    </p>
+    <ol>
+      <li>Register at <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org</a></li>
+      <li>Copy your API key from <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Settings → API</a></li>
+      <li>Copy <code>.env.example</code> to <code>.env</code> and paste your key</li>
+      <li>Restart the server</li>
+    </ol>
+    <p class="setup-note">Data refreshes automatically every 6 hours once configured.</p>
+  </div>
+
+  <div id="pagination" class="pagination hidden">
+    <button id="prev-page" class="page-btn" disabled>← Prev</button>
+    <span id="page-info" class="page-info"></span>
+    <button id="next-page" class="page-btn">Next →</button>
+  </div>
+</main>
+
+<!-- Movie Detail Modal -->
+<div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-body">
+      <div class="modal-poster-wrap">
+        <img class="modal-poster" id="modal-poster" src="" alt="" />
+      </div>
+      <div class="modal-info">
+        <div class="modal-meta-top">
+          <span id="modal-mpaa" class="mpaa-badge hidden"></span>
+          <span id="modal-year" class="modal-year"></span>
+          <span id="modal-runtime" class="modal-runtime"></span>
+        </div>
+        <h2 id="modal-title" class="modal-title"></h2>
+        <p id="modal-tagline" class="modal-tagline"></p>
+        <div class="modal-scores">
+          <div id="modal-tmdb-score" class="score-pill tmdb hidden">
+            <span class="score-label">TMDB</span>
+            <span class="score-value" id="modal-tmdb-val"></span>
+          </div>
+          <div id="modal-rt-score" class="score-pill rt hidden">
+            <span class="score-label">🍅 RT</span>
+            <span class="score-value" id="modal-rt-val"></span>
+          </div>
+          <div id="modal-audience-score" class="score-pill audience hidden">
+            <span class="score-label">👥 Audience</span>
+            <span class="score-value" id="modal-audience-val"></span>
+          </div>
+        </div>
+        <div class="modal-genres" id="modal-genres"></div>
+        <p id="modal-overview" class="modal-overview"></p>
+        <div class="modal-providers-section">
+          <h3>Where to Watch</h3>
+          <div id="modal-providers" class="modal-providers"></div>
+        </div>
+        <div class="modal-links" id="modal-links"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>
+    Movie data from <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>
+    &amp; <a href="https://www.rottentomatoes.com" target="_blank" rel="noopener">Rotten Tomatoes</a>.
+    Not affiliated with any streaming service.
+  </p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
