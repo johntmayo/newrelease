@@ -12,6 +12,7 @@ const state = {
     platform: '',
     type: '',
     genre: '',
+    availability: '',
     sort: 'date',
   },
 };
@@ -39,6 +40,7 @@ const platformFilter = $('platform-filter');
 const typeFilter   = $('type-filter');
 const genreFilter  = $('genre-filter');
 const sortSelect   = $('sort-select');
+const availFilter  = $('avail-filter');
 const modalOverlay = $('modal-overlay');
 const modalClose   = $('modal-close');
 
@@ -134,10 +136,11 @@ async function loadMovies() {
     limit: 40,
     sort: state.filters.sort,
   });
-  if (state.filters.q)        params.set('q', state.filters.q);
-  if (state.filters.platform) params.set('platform', state.filters.platform);
-  if (state.filters.type)     params.set('type', state.filters.type);
-  if (state.filters.genre)    params.set('genre', state.filters.genre);
+  if (state.filters.q)            params.set('q', state.filters.q);
+  if (state.filters.platform)     params.set('platform', state.filters.platform);
+  if (state.filters.type)         params.set('type', state.filters.type);
+  if (state.filters.genre)        params.set('genre', state.filters.genre);
+  if (state.filters.availability) params.set('availability', state.filters.availability);
 
   try {
     const data = await apiFetch(`/api/movies?${params}`);
@@ -162,7 +165,7 @@ async function loadMovies() {
 
     // Summary bar
     summaryBar.classList.remove('hidden');
-    const hasFilters = state.filters.q || state.filters.platform || state.filters.type || state.filters.genre;
+    const hasFilters = state.filters.q || state.filters.platform || state.filters.type || state.filters.genre || state.filters.availability;
     resultCount.textContent = `${data.total.toLocaleString()} movie${data.total !== 1 ? 's' : ''}`;
     clearFilters.classList.toggle('hidden', !hasFilters);
 
@@ -222,7 +225,7 @@ function createCard(movie) {
       }
     </div>
     <div class="card-providers">
-      ${renderProviderChips(movie.providers || [], 3)}
+      ${renderProviderChips(movie.providers || [], 3, movie.inTheaters)}
     </div>
   `;
 
@@ -230,7 +233,7 @@ function createCard(movie) {
   return card;
 }
 
-function renderProviderChips(providers, maxShow = 99) {
+function renderProviderChips(providers, maxShow = 99, inTheaters = false) {
   const shown = providers.slice(0, maxShow);
   const rest = providers.length - shown.length;
 
@@ -241,6 +244,13 @@ function renderProviderChips(providers, maxShow = 99) {
   }).join('');
 
   if (rest > 0) html += `<span class="provider-chip stream">+${rest}</span>`;
+
+  // Show "In Theaters" chip for movies without streaming providers
+  const hasStream = providers.some(p => p.type?.includes('stream'));
+  if (inTheaters && !hasStream) {
+    html = `<span class="provider-chip theater">🎭 In Theaters</span>` + html;
+  }
+
   return html;
 }
 
@@ -311,7 +321,11 @@ function openModal(movie) {
     .map(g => `<span class="genre-tag">${escHtml(g)}</span>`).join('');
 
   // Providers
-  $('modal-providers').innerHTML = (movie.providers || []).map(p => {
+  const hasModalStream = (movie.providers || []).some(p => p.type?.includes('stream'));
+  const theaterChipHtml = movie.inTheaters && !hasModalStream
+    ? `<div class="modal-provider-chip theater-chip">🎭 <span>In Theaters</span><span class="type-badge theater-badge">Now Playing</span></div>`
+    : '';
+  $('modal-providers').innerHTML = theaterChipHtml + (movie.providers || []).map(p => {
     const types = (p.type || 'stream').split('+');
     const badgesHtml = types.map(t => `<span class="type-badge ${t}">${typeLabel(t)}</span>`).join('');
     const logoHtml = p.logo
@@ -382,14 +396,25 @@ sortSelect.addEventListener('change', () => {
   loadMovies();
 });
 
+availFilter.addEventListener('click', e => {
+  const btn = e.target.closest('.avail-btn');
+  if (!btn) return;
+  availFilter.querySelectorAll('.avail-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.filters.availability = btn.dataset.value;
+  state.page = 1;
+  loadMovies();
+});
+
 clearFilters.addEventListener('click', () => {
-  state.filters = { q: '', platform: '', type: '', genre: '', sort: 'date' };
+  state.filters = { q: '', platform: '', type: '', genre: '', availability: '', sort: 'date' };
   state.page = 1;
   searchInput.value = '';
   platformFilter.value = '';
   typeFilter.value = '';
   genreFilter.value = '';
   sortSelect.value = 'date';
+  availFilter.querySelectorAll('.avail-btn').forEach(b => b.classList.toggle('active', b.dataset.value === ''));
   loadMovies();
 });
 

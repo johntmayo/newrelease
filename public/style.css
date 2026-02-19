@@ -15,6 +15,7 @@
   --stream: #2ec4b6;
   --rent: #f4a261;
   --buy: #a8dadc;
+  --theater: #e8b04b;
   --tmdb: #01b4e4;
   --rt: #f93208;
   --audience: #6ab04c;
@@ -235,6 +236,42 @@ a:hover { text-decoration: underline; }
 
 .filter-select:focus { border-color: var(--accent); }
 
+/* ─── Availability filter ───────────────────────────────────────────────────── */
+.avail-filter {
+  display: flex;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avail-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-family: var(--font);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition);
+  border-right: 1px solid var(--border);
+}
+
+.avail-btn:last-child { border-right: none; }
+
+.avail-btn:hover:not(.active) {
+  background: var(--bg2);
+  color: var(--text);
+}
+
+.avail-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 /* ─── Summary bar ───────────────────────────────────────────────────────────── */
 .summary-bar {
   max-width: 1400px;
@@ -408,9 +445,10 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
 }
 
-.provider-chip.stream { background: rgba(46,196,182,0.15); color: var(--stream); border: 1px solid rgba(46,196,182,0.3); }
-.provider-chip.rent   { background: rgba(244,162,97,0.15); color: var(--rent);   border: 1px solid rgba(244,162,97,0.3); }
-.provider-chip.buy    { background: rgba(168,218,220,0.15);color: var(--buy);    border: 1px solid rgba(168,218,220,0.3); }
+.provider-chip.stream   { background: rgba(46,196,182,0.15); color: var(--stream);  border: 1px solid rgba(46,196,182,0.3); }
+.provider-chip.rent     { background: rgba(244,162,97,0.15); color: var(--rent);    border: 1px solid rgba(244,162,97,0.3); }
+.provider-chip.buy      { background: rgba(168,218,220,0.15);color: var(--buy);     border: 1px solid rgba(168,218,220,0.3); }
+.provider-chip.theater  { background: rgba(232,176,75,0.15); color: var(--theater); border: 1px solid rgba(232,176,75,0.3); }
 
 .provider-logo {
   width: 14px;
@@ -713,9 +751,16 @@ a:hover { text-decoration: underline; }
   border-radius: 3px;
 }
 
-.type-badge.stream { background: rgba(46,196,182,0.2); color: var(--stream); }
-.type-badge.rent   { background: rgba(244,162,97,0.2); color: var(--rent); }
-.type-badge.buy    { background: rgba(168,218,220,0.2);color: var(--buy); }
+.type-badge.stream        { background: rgba(46,196,182,0.2);  color: var(--stream); }
+.type-badge.rent          { background: rgba(244,162,97,0.2);  color: var(--rent); }
+.type-badge.buy           { background: rgba(168,218,220,0.2); color: var(--buy); }
+.type-badge.theater-badge { background: rgba(232,176,75,0.2);  color: var(--theater); }
+
+.theater-chip {
+  background: rgba(232,176,75,0.1);
+  border: 1px solid rgba(232,176,75,0.3);
+  color: var(--theater);
+}
 
 .modal-links {
   display: flex;
@@ -756,6 +801,8 @@ a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .logo-tag { display: none; }
   .controls-inner { flex-direction: column; align-items: stretch; }
+  .avail-filter { width: 100%; }
+  .avail-btn { flex: 1; }
   .filters { justify-content: stretch; }
   .filter-select { flex: 1; }
   .movies-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; padding: 1rem; }

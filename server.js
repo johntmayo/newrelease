@@ -115,7 +115,7 @@ app.use(async (_req, _res, next) => {
 // ─── API routes ───────────────────────────────────────────────────────────────
 
 app.get('/api/movies', (req, res) => {
-  let { q, platform, type, genre, sort = 'date', page = '1', limit = '40' } = req.query;
+  let { q, platform, type, genre, availability, sort = 'date', page = '1', limit = '40' } = req.query;
   const pageNum = Math.max(1, parseInt(page, 10));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10)));
 
@@ -128,6 +128,11 @@ app.get('/api/movies', (req, res) => {
       m.overview?.toLowerCase().includes(lq) ||
       m.genres?.some(g => g.toLowerCase().includes(lq))
     );
+  }
+  if (availability === 'theater') {
+    movies = movies.filter(m => m.inTheaters === true);
+  } else if (availability === 'streaming') {
+    movies = movies.filter(m => m.providers?.some(p => p.type?.includes('stream')));
   }
   if (platform) {
     const lp = platform.toLowerCase();

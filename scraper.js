@@ -74,8 +74,9 @@ function normalizeProviders(providerData, region) {
   return Object.values(providers);
 }
 
-// Fetch a single page of TMDB discover results for home-release movies
-async function fetchTmdbPage(page, region, daysBack = 90) {
+// Fetch a single page of TMDB discover results
+// releaseType: '4|5' = Digital/Physical (home), '2|3' = Theatrical
+async function fetchTmdbPage(page, region, daysBack = 90, releaseType = '4|5') {
   if (!TMDB_KEY) throw new Error('TMDB_API_KEY not set');
 
   const since = new Date();
@@ -86,8 +87,7 @@ async function fetchTmdbPage(page, region, daysBack = 90) {
   const params = {
     api_key: TMDB_KEY,
     sort_by: 'primary_release_date.desc',
-    // release types 4 = Digital, 5 = Physical – both indicate home availability
-    with_release_type: '4|5',
+    with_release_type: releaseType,
     'primary_release_date.gte': sinceStr,
     'primary_release_date.lte': todayStr,
     region,
@@ -266,10 +266,11 @@ async function fetchMovies(region = 'US', maxPages = 2) {
     return getDemoMovies();
   }
 
-  // 1. Scrape supplementary sources in parallel with TMDB page 1
-  const [rtMovies, page1Data] = await Promise.allSettled([
+  // 1. Kick off RT scrape + home page 1 + theatrical page 1 in parallel
+  const [rtMovies, page1Data, theaterPage1Data] = await Promise.allSettled([
     scrapeRottenTomatoes(),
-    fetchTmdbPage(1, region),
+    fetchTmdbPage(1, region, 90, '4|5'),
+    fetchTmdbPage(1, region, 60, '2|3'),
   ]);
 
   const rtList = rtMovies.status === 'fulfilled' ? rtMovies.value : [];
@@ -277,24 +278,47 @@ async function fetchMovies(region = 'US', maxPages = 2) {
 
   if (page1Data.status !== 'fulfilled') {
     console.error('[TMDB] Failed to fetch page 1:', page1Data.reason?.message);
-    // Fall back to RT-only or demo data
     return rtList.length ? rtList.map(rt => ({ ...rt, providers: [], source: 'rt' })) : getDemoMovies();
   }
 
-  const totalPages = Math.min(page1Data.value.total_pages || 1, maxPages);
-  const allPages = [page1Data.value];
+  // 2. Collect theatrical movie IDs and stubs (movies currently in theaters)
+  const theaterIds = new Set();
+  const theaterStubMap = new Map(); // id -> stub for theater-only movies
 
-  // Fetch remaining pages
-  if (totalPages > 1) {
-    const remaining = [];
-    for (let p = 2; p <= totalPages; p++) remaining.push(fetchTmdbPage(p, region));
-    const results = await Promise.allSettled(remaining);
-    results.forEach(r => { if (r.status === 'fulfilled') allPages.push(r.value); });
+  if (theaterPage1Data.status === 'fulfilled') {
+    const theaterTotalPages = Math.min(theaterPage1Data.value.total_pages || 1, maxPages);
+    const allTheaterPages = [theaterPage1Data.value];
+
+    if (theaterTotalPages > 1) {
+      const remaining = [];
+      for (let p = 2; p <= theaterTotalPages; p++) remaining.push(fetchTmdbPage(p, region, 60, '2|3'));
+      const results = await Promise.allSettled(remaining);
+      results.forEach(r => { if (r.status === 'fulfilled') allTheaterPages.push(r.value); });
+    }
+
+    allTheaterPages.forEach(page => {
+      (page.results || []).forEach(m => {
+        theaterIds.add(m.id);
+        if (!theaterStubMap.has(m.id)) theaterStubMap.set(m.id, m);
+      });
+    });
+
+    console.log(`[TMDB] ${theaterIds.size} movies in theaters`);
   }
 
-  // Collect all movie stubs
+  // 3. Collect home-release stubs (digital/physical)
+  const totalPages = Math.min(page1Data.value.total_pages || 1, maxPages);
+  const allHomePages = [page1Data.value];
+
+  if (totalPages > 1) {
+    const remaining = [];
+    for (let p = 2; p <= totalPages; p++) remaining.push(fetchTmdbPage(p, region, 90, '4|5'));
+    const results = await Promise.allSettled(remaining);
+    results.forEach(r => { if (r.status === 'fulfilled') allHomePages.push(r.value); });
+  }
+
   const stubs = [];
-  allPages.forEach(page => {
+  allHomePages.forEach(page => {
     (page.results || []).forEach(m => {
       if (!seen.has(m.id)) {
         seen.add(m.id);
@@ -303,9 +327,17 @@ async function fetchMovies(region = 'US', maxPages = 2) {
     });
   });
 
-  console.log(`[TMDB] ${stubs.length} movies found across ${allPages.length} pages`);
+  // 4. Add theater-only stubs (in theaters but no home release yet)
+  theaterStubMap.forEach((stub, id) => {
+    if (!seen.has(id)) {
+      seen.add(id);
+      stubs.push(stub);
+    }
+  });
 
-  // Fetch details and providers for each movie (batched to avoid rate-limits)
+  console.log(`[TMDB] ${stubs.length} total movies across all sources`);
+
+  // 5. Fetch details and providers for each movie (batched to avoid rate-limits)
   const BATCH = 10;
   for (let i = 0; i < stubs.length; i += BATCH) {
     const batch = stubs.slice(i, i + BATCH);
@@ -339,6 +371,8 @@ async function fetchMovies(region = 'US', maxPages = 2) {
           ...details,
           // providers
           providers,
+          // availability
+          inTheaters: theaterIds.has(m.id),
           source: 'tmdb',
           fetchedAt: new Date().toISOString(),
         };
