@@ -256,6 +256,19 @@ function buildRtLookup(rtMovies) {
   return map;
 }
 
+// Generate a best-guess Rotten Tomatoes URL from a movie title.
+// RT slugs are lowercase, apostrophes dropped, other non-alphanumeric chars
+// replaced with underscores (e.g. "Spider-Man: No Way Home" → spider_man_no_way_home).
+function buildRtUrl(title) {
+  if (!title) return null;
+  const slug = title
+    .toLowerCase()
+    .replace(/[''´`]/g, '')          // drop apostrophes / curly quotes
+    .replace(/[^a-z0-9]+/g, '_')     // non-alphanumeric runs → underscore
+    .replace(/^_+|_+$/g, '');        // trim leading/trailing underscores
+  return `https://www.rottentomatoes.com/m/${slug}`;
+}
+
 // Main export: fetch and merge movies from all sources
 async function fetchMovies(region = 'US', maxPages = 2) {
   const movies = [];
@@ -365,7 +378,7 @@ async function fetchMovies(region = 'US', maxPages = 2) {
           // merged RT data
           rtScore: rtData.rtScore ?? null,
           audienceScore: rtData.audienceScore ?? null,
-          rtUrl: rtData.rtUrl ?? null,
+          rtUrl: rtData.rtUrl ?? buildRtUrl(m.title),
           mpaaRating: rtData.mpaaRating ?? null,
           // details
           ...details,

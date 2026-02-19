@@ -337,7 +337,8 @@ function openModal(movie) {
   // Links
   const linksEl = $('modal-links');
   const links = [];
-  if (movie.rtUrl) links.push(`<a class="modal-link-btn" href="${escHtml(movie.rtUrl)}" target="_blank" rel="noopener">🍅 Rotten Tomatoes</a>`);
+  const rtLink = movie.rtUrl || buildRtUrl(movie.title);
+  if (rtLink) links.push(`<a class="modal-link-btn" href="${escHtml(rtLink)}" target="_blank" rel="noopener">🍅 Rotten Tomatoes</a>`);
   if (movie.imdbId) links.push(`<a class="modal-link-btn" href="https://www.imdb.com/title/${escHtml(movie.imdbId)}/" target="_blank" rel="noopener">IMDb</a>`);
   if (movie.id && movie.source !== 'demo') {
     links.push(`<a class="modal-link-btn" href="https://www.themoviedb.org/movie/${movie.id}" target="_blank" rel="noopener">TMDB</a>`);
@@ -453,6 +454,16 @@ refreshBtn.addEventListener('click', async () => {
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+function buildRtUrl(title) {
+  if (!title) return null;
+  const slug = title
+    .toLowerCase()
+    .replace(/[''´`]/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  return `https://www.rottentomatoes.com/m/${slug}`;
+}
+
 function escHtml(str) {
   if (!str) return '';
   return String(str)
