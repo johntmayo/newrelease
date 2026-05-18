@@ -131,8 +131,8 @@ app.get('/api/movies', (req, res) => {
   }
   if (availability === 'theater') {
     movies = movies.filter(m => m.inTheaters === true);
-  } else if (availability === 'streaming') {
-    movies = movies.filter(m => m.providers?.some(p => p.type?.includes('stream')));
+  } else if (availability === 'online' || availability === 'streaming') {
+    movies = movies.filter(m => (m.providers || []).length > 0);
   }
   if (platform) {
     const lp = platform.toLowerCase();

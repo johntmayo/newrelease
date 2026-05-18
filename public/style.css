@@ -13,6 +13,8 @@
   --accent: #e63946;
   --accent2: #f4a261;
   --stream: #2ec4b6;
+  --free: #6ab04c;
+  --ads: #b8e986;
   --rent: #f4a261;
   --buy: #a8dadc;
   --theater: #e8b04b;
@@ -446,6 +448,8 @@ a:hover { text-decoration: underline; }
 }
 
 .provider-chip.stream   { background: rgba(46,196,182,0.15); color: var(--stream);  border: 1px solid rgba(46,196,182,0.3); }
+.provider-chip.free     { background: rgba(106,176,76,0.15);  color: var(--free);    border: 1px solid rgba(106,176,76,0.3); }
+.provider-chip.ads      { background: rgba(184,233,134,0.15); color: var(--ads);     border: 1px solid rgba(184,233,134,0.3); }
 .provider-chip.rent     { background: rgba(244,162,97,0.15); color: var(--rent);    border: 1px solid rgba(244,162,97,0.3); }
 .provider-chip.buy      { background: rgba(168,218,220,0.15);color: var(--buy);     border: 1px solid rgba(168,218,220,0.3); }
 .provider-chip.theater  { background: rgba(232,176,75,0.15); color: var(--theater); border: 1px solid rgba(232,176,75,0.3); }
@@ -752,6 +756,8 @@ a:hover { text-decoration: underline; }
 }
 
 .type-badge.stream        { background: rgba(46,196,182,0.2);  color: var(--stream); }
+.type-badge.free          { background: rgba(106,176,76,0.2);   color: var(--free); }
+.type-badge.ads           { background: rgba(184,233,134,0.2);  color: var(--ads); }
 .type-badge.rent          { background: rgba(244,162,97,0.2);  color: var(--rent); }
 .type-badge.buy           { background: rgba(168,218,220,0.2); color: var(--buy); }
 .type-badge.theater-badge { background: rgba(232,176,75,0.2);  color: var(--theater); }

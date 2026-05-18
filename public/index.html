@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NewRelease — Streaming Now</title>
+  <title>NewRelease - Available At Home</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -14,7 +14,7 @@
     <div class="logo">
       <span class="logo-icon">▶</span>
       <span class="logo-text">NewRelease</span>
-      <span class="logo-tag">Streaming Now</span>
+      <span class="logo-tag">Available At Home</span>
     </div>
     <div class="header-right">
       <div id="status-badge" class="status-badge" title="Data status">
@@ -42,7 +42,7 @@
 
     <div class="avail-filter" id="avail-filter">
       <button class="avail-btn active" data-value="">All</button>
-      <button class="avail-btn" data-value="streaming">▶ Streaming</button>
+      <button class="avail-btn" data-value="online">Available Online</button>
       <button class="avail-btn" data-value="theater">🎭 In Theaters</button>
     </div>
 
@@ -54,6 +54,8 @@
       <select id="type-filter" class="filter-select">
         <option value="">Any Access</option>
         <option value="stream">Stream (Included)</option>
+        <option value="free">Free</option>
+        <option value="ads">Ad-Supported</option>
         <option value="rent">Rent</option>
         <option value="buy">Buy / Own</option>
       </select>
@@ -97,7 +99,7 @@
     <div class="setup-icon">🔑</div>
     <h2>API Key Required</h2>
     <p>
-      This app uses the <strong>TMDB API</strong> (free) to pull streaming data.<br/>
+      This app uses the <strong>TMDB API</strong> (free) to pull streaming and rental data.<br/>
       To get started:
     </p>
     <ol>

@@ -1,11 +1,11 @@
 # NewRelease 🎬
 
-A self-hosted website that automatically aggregates movies newly released to streaming platforms, including titles available for streaming, rent, or purchase.
+A self-hosted website that automatically aggregates movies newly available to watch at home, including titles available for included streaming, free/ad-supported streaming, rent, or purchase.
 
 ## Features
 
 - **Live data** – scrapes TMDB and supplements with Rotten Tomatoes scores
-- **All access types** – streaming (included), rent, and buy
+- **All access types** – streaming (included), free/ad-supported, rent, and buy
 - **Filter & search** – by platform, genre, access type, or title keyword
 - **Sort** – by release date, TMDB rating, popularity, or title
 - **Auto-refresh** – data refreshes every 6 hours automatically (configurable)
@@ -69,8 +69,8 @@ npm run dev   # auto-restarts on file changes (Node 22+)
 |---|---|
 | `GET /api/movies` | Filtered/sorted movie list |
 | `GET /api/status` | Cache health and last update time |
-| `GET /api/platforms` | Distinct streaming platforms |
+| `GET /api/platforms` | Distinct watch providers |
 | `GET /api/genres` | Distinct genres |
 | `POST /api/refresh` | Trigger immediate data refresh |
 
-Query params for `/api/movies`: `q`, `platform`, `type` (`stream`/`rent`/`buy`), `genre`, `sort` (`date`/`rating`/`popularity`/`title`), `page`, `limit`.
+Query params for `/api/movies`: `q`, `platform`, `type` (`stream`/`free`/`ads`/`rent`/`buy`), `availability` (`online`/`theater`), `genre`, `sort` (`date`/`rating`/`popularity`/`title`), `page`, `limit`.

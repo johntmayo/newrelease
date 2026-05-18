@@ -36,40 +36,25 @@ function normalizeProviders(providerData, region) {
   const regionData = providerData?.results?.[region] || {};
   const providers = {};
 
-  (regionData.flatrate || []).forEach(p => {
-    providers[p.provider_id] = {
-      id: p.provider_id,
-      name: p.provider_name,
-      logo: tmdbImageUrl(p.logo_path),
-      type: 'stream',
-    };
-  });
-  (regionData.rent || []).forEach(p => {
+  function addProvider(p, type) {
     if (!providers[p.provider_id]) {
       providers[p.provider_id] = {
         id: p.provider_id,
         name: p.provider_name,
         logo: tmdbImageUrl(p.logo_path),
-        type: 'rent',
+        type,
       };
     } else {
-      providers[p.provider_id].type = 'stream+rent';
+      const types = providers[p.provider_id].type.split('+');
+      if (!types.includes(type)) providers[p.provider_id].type += `+${type}`;
     }
-  });
-  (regionData.buy || []).forEach(p => {
-    if (!providers[p.provider_id]) {
-      providers[p.provider_id] = {
-        id: p.provider_id,
-        name: p.provider_name,
-        logo: tmdbImageUrl(p.logo_path),
-        type: 'buy',
-      };
-    } else if (providers[p.provider_id].type === 'rent') {
-      providers[p.provider_id].type = 'rent+buy';
-    } else if (!providers[p.provider_id].type.includes('buy')) {
-      providers[p.provider_id].type += '+buy';
-    }
-  });
+  }
+
+  (regionData.flatrate || []).forEach(p => addProvider(p, 'stream'));
+  (regionData.free || []).forEach(p => addProvider(p, 'free'));
+  (regionData.ads || []).forEach(p => addProvider(p, 'ads'));
+  (regionData.rent || []).forEach(p => addProvider(p, 'rent'));
+  (regionData.buy || []).forEach(p => addProvider(p, 'buy'));
 
   return Object.values(providers);
 }
@@ -83,13 +68,14 @@ async function fetchTmdbPage(page, region, daysBack = 90, releaseType = '4|5') {
   since.setDate(since.getDate() - daysBack);
   const sinceStr = since.toISOString().split('T')[0];
   const todayStr = new Date().toISOString().split('T')[0];
+  const dateField = releaseType === '4|5' ? 'release_date' : 'primary_release_date';
 
   const params = {
     api_key: TMDB_KEY,
-    sort_by: 'primary_release_date.desc',
+    sort_by: `${dateField}.desc`,
     with_release_type: releaseType,
-    'primary_release_date.gte': sinceStr,
-    'primary_release_date.lte': todayStr,
+    [`${dateField}.gte`]: sinceStr,
+    [`${dateField}.lte`]: todayStr,
     region,
     page,
     'vote_count.gte': 5,

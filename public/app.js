@@ -245,9 +245,8 @@ function renderProviderChips(providers, maxShow = 99, inTheaters = false) {
 
   if (rest > 0) html += `<span class="provider-chip stream">+${rest}</span>`;
 
-  // Show "In Theaters" chip for movies without streaming providers
-  const hasStream = providers.some(p => p.type?.includes('stream'));
-  if (inTheaters && !hasStream) {
+  // Show "In Theaters" only when there is no at-home availability.
+  if (inTheaters && providers.length === 0) {
     html = `<span class="provider-chip theater">🎭 In Theaters</span>` + html;
   }
 
@@ -321,8 +320,8 @@ function openModal(movie) {
     .map(g => `<span class="genre-tag">${escHtml(g)}</span>`).join('');
 
   // Providers
-  const hasModalStream = (movie.providers || []).some(p => p.type?.includes('stream'));
-  const theaterChipHtml = movie.inTheaters && !hasModalStream
+  const hasModalProviders = (movie.providers || []).length > 0;
+  const theaterChipHtml = movie.inTheaters && !hasModalProviders
     ? `<div class="modal-provider-chip theater-chip">🎭 <span>In Theaters</span><span class="type-badge theater-badge">Now Playing</span></div>`
     : '';
   $('modal-providers').innerHTML = theaterChipHtml + (movie.providers || []).map(p => {
@@ -355,7 +354,7 @@ function closeModal() {
 }
 
 function typeLabel(t) {
-  return { stream: 'Streaming', rent: 'Rent', buy: 'Buy' }[t] || t;
+  return { stream: 'Streaming', free: 'Free', ads: 'Ads', rent: 'Rent', buy: 'Buy' }[t] || t;
 }
 
 modalClose.addEventListener('click', closeModal);

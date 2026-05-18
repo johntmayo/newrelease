@@ -1,7 +1,7 @@
 {
   "name": "newrelease",
   "version": "1.0.0",
-  "description": "Aggregates movies newly released to streaming platforms",
+  "description": "Aggregates movies newly available to watch at home",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
